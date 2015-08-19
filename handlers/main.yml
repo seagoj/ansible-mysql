@@ -1,0 +1,30 @@
+- name: restart mysql
+  service:
+    name: mysqld
+    enabled: yes
+    state: restarted
+  sudo: yes
+
+- name: start mysql
+  service:
+    name: mysqld
+    enabled: yes
+    state: started
+  sudo: yes
+
+- name: update root password
+  mysql_user:
+    name: root
+    password: "{{ mysql_root_password }}"
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+    check_implicit_admin: yes
+    priv: "*.*:ALL,GRANT"
+
+- name: import database
+  mysql_db:
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+    name: "{{ mysql_db_name }}"
+    state: import
+    target: /tmp/dump.sql

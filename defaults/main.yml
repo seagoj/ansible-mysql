@@ -1,0 +1,6 @@
+mysql_port:         3306
+mysql_root_password: password
+mysql_db_name:      db
+mysql_db_user:      dbuser
+mysql_db_password:  dbpassword
+mysql_include_path: /usr/include/mysql

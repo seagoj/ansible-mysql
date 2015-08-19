@@ -1,0 +1,56 @@
+---
+- name: Install Development Tools
+  yum:
+    name: "@Development Tools"
+    state: latest
+
+- name: Copy MySQL Configuration
+  template:
+    src: my.cnf.j2
+    dest: /etc/my.cnf
+
+- name: Add EPEL Repository
+  copy:
+    src: epel.repo
+    dest: /etc/yum.repos.d/epel.repo
+
+- name: Install MySQL
+  yum:
+    name: "{{ item }}"
+    state: latest
+  with_items:
+    - libselinux-python
+    - mysql
+    - mysql-libs
+    - mysql-server
+    - mysql-devel
+    - python
+    - python-devel
+    - python-pip
+
+- name: Install MySQL Python
+  pip:
+    name: mysql-python
+    state: latest
+
+- name: Start MySQL Service
+  service:
+    name: mysqld
+    enabled: yes
+    state: started
+  sudo: yes
+
+- name: Update Root Password
+  mysql_user:
+    name: root
+    password: "{{ mysql_root_password }}"
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+    check_implicit_admin: yes
+    priv: "*.*:ALL,GRANT"
+
+- name: open port
+  command: iptables -I INPUT -p tcp -m state --state NEW -m tcp --dport {{ mysql_port }} -j ACCEPT
+
+- name: Set root privileges
+  command: mysql -uroot -p{{ mysql_root_password }} -e 'GRANT ALL PRIVILEGES ON *.* TO "root"@"%" IDENTIFIED BY "{{ mysql_root_password }}"'
